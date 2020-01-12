@@ -1,0 +1,125 @@
+<!--
+  ~ Copyright (c) 2019. Nikhil Dubbaka from TechNikh.com under GNU AFFERO GENERAL PUBLIC LICENSE
+  ~ Copyright and license notices must be preserved.
+  ~ When a modified version is used to provide a service over a network, the complete source code of the modified version must be made available.
+  -->
+
+<resources>
+    <string name="app_name">History Videos</string>
+    <string name="file_uri" translatable="false">com.technikh.onedrupal.provider</string>
+    <string name="content_description">Image</string>
+    <string name="back_pressed">Please click BACK again to exit from app</string>
+    <string name="signout">Signout</string>
+    <string name="check_internet_connection">Please check internet connectivity</string>
+    <string name="help_node_title">Node Title:</string>
+    <string name="help_search_box">Search content</string>
+
+    <string name="redsox">Redsox</string>
+    <string name="eagles">Eagles</string>
+    <string name="patriots">Patriots</string>
+    <string name="post">POST</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="no_more_result">No more result</string>
+    <string name="unable_to_connect">Unable to connect to server</string>
+    <string name="ucrop_invalid_image">Image should be in either of img, jpg, jpeg, gif or png format</string>
+    <string name="ucrop_unexpected_error">Unexpected error</string>
+    <string name="ucrop_retrieve_error">Unable to retrieve the selected image</string>
+    <string name="dialog_edit_link">Edit Link</string>
+
+    <string name="et_remote_image">URL for External Image</string>
+    <string name="et_remote_page">URL for External Page</string>
+    <string name="et_remote_video">URL for External Video</string>
+    <string name="et_taxonomy_category">Tags</string>
+
+    <string name="drawer_open">Open</string>
+    <string name="drawer_close">Close</string>
+
+    <string name="dialog_api_progress">Loading...</string>
+    <string name="dialog_settings_api_failed_title">Settings API from one_api drupal module Failed!</string>
+    <string name="dialog_settings_api_failed_message_prefix">Most likely user doesn\'t have access to API /onedrupal/api/v1/settings. Check your site permissions table for "Access GET on One Settings resource"</string>
+    <string name="dialog_api_failed_title">Failed!</string>
+    <string name="dialog_api_success_title">Success!</string>
+    <string name="dialog_api_failed_message_prefix">Error:</string>
+    <string name="dialog_api_success_message_prefix">Successfully</string>
+
+    <array name="select_image_from">
+        <item>Capture Image</item>
+        <item>From Gallery</item>
+    </array>
+    <string-array name="array_http_protocols">
+        <item>http://</item>
+        <item>https://</item>
+    </string-array>
+
+    <!-- view_tag_key -->
+    <string name="view_tag_key_nodetype">nodetype</string>
+    <string name="view_tag_key_nidvalue">nidvalue</string>
+    <string name="view_tag_key_fieldname">fieldname</string>
+    <string name="view_tag_key_fieldvalue">fieldvalue</string>
+
+    <!-- Menu -->
+    <string name="menu_undo">Undo</string>
+    <string name="menu_redo">Redo</string>
+    <string name="menu_github">GitHub</string>
+
+    <!-- Dialog -->
+    <string name="dialog_title">Insert link</string>
+    <string name="dialog_edit_hint">http(s)://</string>
+    <string name="dialog_button_ok">OK</string>
+    <string name="dialog_button_cancel">Cancel</string>
+
+    <!-- Toast -->
+    <string name="toast_bold">Bold</string>
+    <string name="toast_italic">Italic</string>
+    <string name="toast_underline">Underline</string>
+    <string name="toast_strikethrough">Strikethrough</string>
+    <string name="toast_bullet">Bullet</string>
+    <string name="toast_quote">Quote</string>
+    <string name="toast_insert_link">Insert link</string>
+    <string name="toast_format_clear">Format clear</string>
+
+    <string name="app_repo">https://github.com/mthli/Knife</string>
+    <string name="title_activity_site_login">Sign in to Drupal site</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_siteurl">Your Drupal site URL like www.example.com</string>
+    <string name="prompt_username">Enter your Drupal site Username.</string>
+    <string name="prompt_password">Password that accompanies your username.</string>
+    <string name="action_sign_in">Sign in</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_site_domain">This Site domain is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">Incorrect password or username or http protocol selection or site domain</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+    <string name="title_activity_SharedDataReceiver">Choose...</string>
+
+    <string name="drupal_publish">Publish</string>
+    <string name="drupal_unpublish">Unpublish</string>
+    <string name="drupal_promote">Promote</string>
+    <string name="drupal_demote">Demote</string>
+    <string name="title_activity_site_content_tabs">SiteContentTabsActivity</string>
+    <string name="tab_text_1">Tab 1</string>
+    <string name="tab_text_2">Tab 2</string>
+    <string name="tab_text_3">Tab 3</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+
+    <string name="ic_keyboard_arrow_right">&#xe0c7;</string>
+    <string name="ic_keyboard_arrow_down">&#xe0c5;</string>
+    <string name="title_activity_taxonomy_browser">Browser</string>
+    <string name="appwidget_text">ChangeMe</string>
+    <string name="configure">Configure</string>
+    <string name="add_widget">Save widget</string>
+
+    <string name="channel_name">API Notifications</string>
+    <string name="channel_description">Notifications after an API call</string>
+
+    <string name="title_activity_test_fullscreen">testFullscreenActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+
+</resources>
