@@ -12,6 +12,7 @@ public class SlideshowJsonModel
 {
     private List<Slides> slides;
     private String lang = "en";
+    private SlideshowSummary summary = null;
 
     public void setSlides(List<Slides> slides){
         this.slides = slides;
@@ -21,5 +22,8 @@ public class SlideshowJsonModel
     }
     public String getLanguage(){
         return this.lang;
+    }
+    public SlideshowSummary getShSummary(){
+        return this.summary;
     }
 }

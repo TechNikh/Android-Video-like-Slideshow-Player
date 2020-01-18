@@ -9,8 +9,10 @@ package com.technikh.evideos.activities;
 import android.animation.Animator;
 import android.animation.AnimatorInflater;
 import android.animation.AnimatorSet;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -38,6 +40,8 @@ import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.MediaController;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -61,9 +65,11 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import com.shopgun.android.zoomlayout.ZoomLayout;
 import com.shopgun.android.zoomlayout.ZoomOnDoubleTapListener;
 import com.technikh.evideos.Animations.TextAnimations;
+import com.technikh.evideos.ShSummaryOptionsAdapter;
 import com.technikh.evideos.app.MyApplication;
 import com.technikh.evideos.models.slideshow.Backgrounds;
 import com.technikh.evideos.models.slideshow.Lines;
+import com.technikh.evideos.models.slideshow.ShQuestionOption;
 import com.technikh.evideos.models.slideshow.lineMedia;
 import com.technikh.evideos.models.slideshow.Slides;
 import com.technikh.evideos.preferences.SlideshowSharedPreferences;
@@ -75,13 +81,17 @@ import com.xw.repo.BubbleSeekBar;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class SlideShowActivity extends AppCompatActivity implements MediaController.MediaPlayerControl, TextToSpeech.OnInitListener {
     private ImageView Pause, NextButton, PreviousButton, replayButton, volume_mute_toggle;
+
+    private static String TAG = "SlideShowActivity";
     //ToggleButton muteToggleButton;
     private BubbleSeekBar speedSeekBar;
     private LinearLayout speedSeekBarWrapper;
@@ -158,6 +168,10 @@ public class SlideShowActivity extends AppCompatActivity implements MediaControl
     HashMap<String, Integer> lineUuidMap = new HashMap<>();
     int numOfLinesInCurrentSlide = 0;
     int waitTimeinMillSecBeforeNextSlide = 2000; // 2 sec
+
+    int currentSlideShowSummaryDialogQuestionIndex = 0;
+    Boolean SlideShowSummaryDialogFinishMode = false;
+    HashMap<Integer, Integer> selectedDialogOption = new HashMap<>();
 
     float maxVolume = 0.3f;
     float volume = maxVolume;
@@ -400,14 +414,6 @@ public class SlideShowActivity extends AppCompatActivity implements MediaControl
                                     showLineImagesView(nextLineIndex, nextLine);
                                 }
                                 if (nextLineIndex == (numOfLinesInCurrentSlide)) {
-                                    if ((NextCount + 1) >= data.getSlides().size()) {
-                                        //startFadeOutFlex(1000, 100, true);   // delay last text line last slide
-                                        startFadeOut(true);
-                                    }else {
-                                        if (!data.getSlides().get(NextCount + 1).getMusic_Mood().equals(currentMusicMood)) {
-                                            startFadeOut(false);
-                                        }
-                                    }
                                     // Last Line
                                     // If available show next slide after waitTimeinMillSecBeforeNextSlide
                                     final Handler handler = new Handler();
@@ -416,12 +422,19 @@ public class SlideShowActivity extends AppCompatActivity implements MediaControl
                                         public void run() {
                                             if (NextCount < (data.getSlides().size() - 1)) {
                                                 NextCount++;
+                                                if (!data.getSlides().get(NextCount).getMusic_Mood().equals(currentMusicMood)) {
+                                                    startFadeOut(false);
+                                                }
                                                 loadViewsFromData();
                                                 playSlideTextToSpeech();
                                             } else {
-                                                startFadeOut(true);
-                                                tts.shutdown();
-                                                finish();
+                                                if(data.getShSummary() != null){
+                                                    showSlideShowSummaryDialog();
+                                                }else {
+                                                    startFadeOut(true);
+                                                    tts.shutdown();
+                                                    finish();
+                                                }
                                             }
                                         }
                                     }, waitTimeinMillSecBeforeNextSlide);
@@ -458,6 +471,156 @@ public class SlideShowActivity extends AppCompatActivity implements MediaControl
         }
         else
             Log.e("error", "Initilization Failed!");
+    }
+
+    private void showSlideShowSummaryResultsDialog(){
+        Iterator it = selectedDialogOption.entrySet().iterator();
+
+        Integer resultScore = 0;
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry)it.next();
+            int questionIndex = (int)pair.getKey();
+            int selectedOptionIndex = (int)pair.getValue();
+            //Boolean isCorrect = false;
+            if(data.getShSummary().getShQuestions().get(questionIndex).getShQuestionOptions().get(selectedOptionIndex).getAnswer()){
+                resultScore++;
+            }
+            Log.d(TAG, "showSlideShowSummaryResultsDialog: "+ pair.getKey() + " = " + pair.getValue());
+            it.remove(); // avoids a ConcurrentModificationException
+        }
+        // Build an AlertDialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(SlideShowActivity.this);
+        // Specify the dialog is not cancelable
+        builder.setCancelable(false);
+        // Set a title for alert dialog
+        builder.setTitle("You got "+resultScore+" of "+data.getShSummary().getShQuestions().size()+" statements correct.");
+        String[] items = data.getShSummary().getShQuestionsAndAnswers();
+        builder.setItems(items,null);
+
+        builder.setPositiveButton("Close", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                startFadeOutFlex(300,10,true);
+            }
+        });
+
+        // Set the neutral/cancel button click listener
+        builder.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        // Display the alert dialog on interface
+        dialog.show();
+    }
+
+    private void showSlideShowSummaryDialog(){
+        // Build an AlertDialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(SlideShowActivity.this);
+
+        //List<ShQuestionOption> _options = data.getShSummary().getShQuestions().get(currentSlideShowSummaryDialogQuestionIndex).getShQuestionOptions();
+        //ListAdapter adapter = new ShSummaryOptionsAdapter( this,  _options);
+        String[] items = data.getShSummary().getShQuestions().get(currentSlideShowSummaryDialogQuestionIndex).getShQuestionOptionsArray();
+        Integer checkedItemIndex = selectedDialogOption.get(currentSlideShowSummaryDialogQuestionIndex);
+
+        Log.d(TAG, "onClick: selectedDialogOption get "+ checkedItemIndex);
+        if(checkedItemIndex == null){
+            checkedItemIndex = -1;
+        }else{
+            //checkedItemIndex++;
+        }
+        builder.setSingleChoiceItems(items, checkedItemIndex, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.d(TAG, "onClick: selectedDialogOption put "+ which);
+                selectedDialogOption.put(currentSlideShowSummaryDialogQuestionIndex, which);
+            }
+        });
+        /*builder.setSingleChoiceItems( adapter, -1, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                Log.d("setSingleChoiceItems", "cdwer onClick: "+which);
+                ((AlertDialog)dialog).getListView().setSelection(which);
+                //ShQuestionOption checkedItem = (ShQuestionOption)((AlertDialog)dialog).getListView().getItemAtPosition(which);
+
+                // a choice has been made!
+                String selectedVal = _options.get(which).getMessage();
+                Log.d("TAG", "chosen " + selectedVal );
+                selectedDialogOption.put(currentSlideShowSummaryDialogQuestionIndex, _options.get(which));
+                //dialog.dismiss();
+            }
+        });*/
+
+        // Specify the dialog is not cancelable
+        builder.setCancelable(false);
+
+        String statSummaryCount = "("+(currentSlideShowSummaryDialogQuestionIndex+1)+"/"+data.getShSummary().getShQuestions().size()+") ";
+        // Set a title for alert dialog
+        builder.setTitle(statSummaryCount+data.getShSummary().getShQuestions().get(currentSlideShowSummaryDialogQuestionIndex).getQuestion());
+
+        // Set the positive/yes button click listener
+        String positiveButtonText = "Next";
+        if(currentSlideShowSummaryDialogQuestionIndex == data.getShSummary().getShQuestions().size()-1){
+            positiveButtonText = "Finish";
+            SlideShowSummaryDialogFinishMode = true;
+        }
+        builder.setPositiveButton(positiveButtonText, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // Do something when click positive button
+                //ListView lw = ((AlertDialog)dialog).getListView();
+                //Log.d(TAG, "1onClick: getCount "+lw.getAdapter().getCount()+" lw.getCheckedItemPosition() "+lw.getCheckedItemPosition());
+                //ShQuestionOption checkedItem = (ShQuestionOption)lw.getAdapter().getItem(lw.getCheckedItemPosition());
+               // Log.d(TAG, "1onClick: "+checkedItem.getMessage());
+                /*tv.setText("Your preferred colors..... \n");
+                for (int i = 0; i<checkedColors.length; i++){
+                    boolean checked = checkedColors[i];
+                    if (checked) {
+                        tv.setText(tv.getText() + colorsList.get(i) + "\n");
+                    }
+                }*/
+                dialog.dismiss();
+                if(!SlideShowSummaryDialogFinishMode) {
+                    if (currentSlideShowSummaryDialogQuestionIndex < data.getShSummary().getShQuestions().size() - 1) {
+                        currentSlideShowSummaryDialogQuestionIndex++;
+                    }
+                    showSlideShowSummaryDialog();
+                }else{
+                    showSlideShowSummaryResultsDialog();
+                }
+            }
+        });
+
+        if(currentSlideShowSummaryDialogQuestionIndex > 0) {
+            // Set the negative/no button click listener
+            builder.setNegativeButton("Previous", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    SlideShowSummaryDialogFinishMode = false;
+                    // Do something when click the negative button
+                    dialog.dismiss();
+                    currentSlideShowSummaryDialogQuestionIndex--;
+                    showSlideShowSummaryDialog();
+                }
+            });
+        }
+
+        // Set the neutral/cancel button click listener
+        builder.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // Do something when click the neutral button
+                startFadeOutFlex(300,10,true);
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        // Display the alert dialog on interface
+        dialog.show();
+
     }
 
     private void setFullScreen(){
